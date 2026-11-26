@@ -1,0 +1,7 @@
+# Compiled program
+run
+*.o
+*.out
+
+# Full pair dumps
+results/

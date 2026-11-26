@@ -1,0 +1,7 @@
+If:
+  PathMatch: .*\.h
+CompileFlags:
+  Add: [-xc-header, -std=c17, -fopenmp, -I/usr/lib/gcc/x86_64-linux-gnu/15/include]
+---
+CompileFlags:
+  Add: [-std=c17, -fopenmp, -I/usr/lib/gcc/x86_64-linux-gnu/15/include]
