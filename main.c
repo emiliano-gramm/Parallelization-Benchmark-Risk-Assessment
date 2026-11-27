@@ -33,9 +33,14 @@ int main() {
     Results results_cyclic_static_openmp;
     openmp_cyclic_static_run(scenes, &results_cyclic_static_openmp);
 
+    // OPENMP, Cyclic Parallel Run
+    Results results_1d_static_openmp;
+    openmp_1d_static_run(scenes, &results_1d_static_openmp);
+
     print_run_to_file("results/serial_results.txt", results_serial);
-    print_run_to_file("results/naive_static_openmp", results_naive_static_openmp);
-    print_run_to_file("results/naive_cyclic_openmp", results_cyclic_static_openmp);
+    print_run_to_file("results/naive_static_openmp.txt", results_naive_static_openmp);
+    print_run_to_file("results/cyclic_static_openmp.txt", results_cyclic_static_openmp);
+    print_run_to_file("results/One_D_static_openmp.txt", results_1d_static_openmp);
 
     return 0;
 }

@@ -8,5 +8,7 @@ void openmp_naive_static_run(Scene *scenes, Results *results);
 
 void openmp_cyclic_static_run(Scene *scenes, Results *results);
 
+void openmp_1d_static_run(Scene *scenes, Results *results);
+
 
 #endif
