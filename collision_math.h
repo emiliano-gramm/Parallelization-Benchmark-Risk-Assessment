@@ -60,7 +60,7 @@ int find_collision_step(float *RU1_coords, float *RU2_coords, float *RU1_bbox, f
         */
         float *L;
         int gap = 0;
-        for (int j = 0; j < sizeof(axes)/sizeof(axes[0]); j++) { // 4 total axis
+        for (int j = 0; j < (int)(sizeof(axes)/sizeof(axes[0])); j++) { // 4 total axis
             L = axes[j];
             // dot product to find projection of distance vector of the centers projected onto L
             float dist = fabsf(d[0]*L[0] + d[1]*L[1]);

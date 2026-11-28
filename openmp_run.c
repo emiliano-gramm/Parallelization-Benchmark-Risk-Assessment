@@ -1,26 +1,35 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <omp.h>
+#include <stdbool.h>
 
 #include "config.h"
 #include "openmp_run.h"
 #include "scenario.h"
 #include "collision_math.h"
 
-void openmp_naive_static_run(Scene *scenes, Results *results) {
+void openmp_naive_static_run(Scene *scenes, Results *results, int threads) {
     // SERIAL RUN
     // All experiments just need the initial pointer to the contiguos memory, this is an array of pointers
     
     results->all_experiments = malloc((size_t)sizeof(N)/sizeof(N[0]) * sizeof(int *)); // -> gets member of pointer object
     results->total_collisions = malloc((size_t)sizeof(N)/sizeof(N[0]) * sizeof(int));
+    results->num_pairs = malloc((size_t)sizeof(N)/sizeof(N[0]) * sizeof(int));
+    results->timer_results = malloc((size_t)sizeof(N)/sizeof(N[0]) * sizeof(double));
+    results->backend = malloc((size_t)10*sizeof(char));
+    results->schedule = malloc((size_t)15*sizeof(char));
+    results->verified = malloc((size_t)sizeof(N)/sizeof(N[0])*sizeof(bool));
 
-    for (int n = 0; n < sizeof(N)/sizeof(N[0]); n++) {
+    for (int n = 0; n < (int)(sizeof(N)/sizeof(N[0])); n++) {
         int total_collisions = 0;
         // assign memory for current experiment, total results is N*(N-1)/2
         int *current_experiment = malloc((size_t)(N[n]*(N[n]-1))/2.0 *sizeof(int));
         // build current scene for n number of road users
         Scene current_scene = scenes[n];
-
+        
+        omp_set_num_threads(threads);
+        double current_timer = omp_get_wtime();
         #pragma omp parallel for schedule(static) reduction(+:total_collisions)
         for (int i = 0; i < H*K*N[n]; i+=H*K) {
             for (int j = i + H*K; j < H*K*N[n]; j+=H*K) {
@@ -46,25 +55,39 @@ void openmp_naive_static_run(Scene *scenes, Results *results) {
                 }
             }
         }
+        current_timer = omp_get_wtime() - current_timer;
+
         results->all_experiments[n] = &current_experiment[0];
         results->total_collisions[n] = total_collisions;
+        results->num_pairs[n] = N[n]*(N[n]-1)/2;
+        results->timer_results[n] = current_timer;
+        results->threads = threads;
+        strcpy(results->backend, "openmp");
+        strcpy(results->schedule, "static");
     }
 }
 
-void openmp_cyclic_static_run(Scene *scenes, Results *results) {
+void openmp_cyclic_static_run(Scene *scenes, Results *results, int threads) {
     // SERIAL RUN
     // All experiments just need the initial pointer to the contiguos memory, this is an array of pointers
     
     results->all_experiments = malloc((size_t)sizeof(N)/sizeof(N[0]) * sizeof(int *)); // -> gets member of pointer object
     results->total_collisions = malloc((size_t)sizeof(N)/sizeof(N[0]) * sizeof(int));
+    results->num_pairs = malloc((size_t)sizeof(N)/sizeof(N[0]) * sizeof(int));
+    results->timer_results = malloc((size_t)sizeof(N)/sizeof(N[0]) * sizeof(double));
+    results->backend = malloc((size_t)10*sizeof(char));
+    results->schedule = malloc((size_t)15*sizeof(char));
+    results->verified = malloc((size_t)sizeof(N)/sizeof(N[0])*sizeof(bool));
 
-    for (int n = 0; n < sizeof(N)/sizeof(N[0]); n++) {
+    for (int n = 0; n < (int)(sizeof(N)/sizeof(N[0])); n++) {
         int total_collisions = 0;
         // assign memory for current experiment, total results is N*(N-1)/2
         int *current_experiment = malloc((size_t)(N[n]*(N[n]-1))/2.0 *sizeof(int));
         // build current scene for n number of road users
         Scene current_scene = scenes[n];
 
+        omp_set_num_threads(threads);
+        double current_timer = omp_get_wtime();
         #pragma omp parallel for schedule(static, 16) reduction(+:total_collisions)
         for (int i = 0; i < H*K*N[n]; i+=H*K) {
             for (int j = i + H*K; j < H*K*N[n]; j+=H*K) {
@@ -90,20 +113,32 @@ void openmp_cyclic_static_run(Scene *scenes, Results *results) {
                 }
             }
         }
+        current_timer = omp_get_wtime() - current_timer;
+
         results->all_experiments[n] = &current_experiment[0];
         results->total_collisions[n] = total_collisions;
+        results->timer_results[n] = current_timer;
+        results->num_pairs[n] = N[n]*(N[n]-1)/2;
+        results->threads = threads;
+        strcpy(results->backend, "openmp");
+        strcpy(results->schedule, "static-16");
     }
 }
 
 
-void openmp_1d_static_run(Scene *scenes, Results *results) {
+void openmp_1d_static_run(Scene *scenes, Results *results, int threads) {
     // SERIAL RUN
     // All experiments just need the initial pointer to the contiguos memory, this is an array of pointers
     
     results->all_experiments = malloc((size_t)sizeof(N)/sizeof(N[0]) * sizeof(int *)); // -> gets member of pointer object
     results->total_collisions = malloc((size_t)sizeof(N)/sizeof(N[0]) * sizeof(int));
+    results->num_pairs = malloc((size_t)sizeof(N)/sizeof(N[0]) * sizeof(int));
+    results->timer_results = malloc((size_t)sizeof(N)/sizeof(N[0]) * sizeof(double));
+    results->backend = malloc((size_t)10*sizeof(char));
+    results->schedule = malloc((size_t)15*sizeof(char));
+    results->verified = malloc((size_t)sizeof(N)/sizeof(N[0])*sizeof(bool));
 
-    for (int n = 0; n < sizeof(N)/sizeof(N[0]); n++) {
+    for (int n = 0; n < (int)(sizeof(N)/sizeof(N[0])); n++) {
         int total_collisions = 0;
         int num_pairs = (N[n]*(N[n]-1))/2;
         // assign memory for current experiment, total results is N*(N-1)/2
@@ -111,6 +146,8 @@ void openmp_1d_static_run(Scene *scenes, Results *results) {
         // build current scene for n number of road users
         Scene current_scene = scenes[n];
 
+        omp_set_num_threads(threads);
+        double current_timer = omp_get_wtime();
         #pragma omp parallel for schedule(static) reduction(+:total_collisions)
         for (int i = 0; i < num_pairs; i++) {
             /*
@@ -134,7 +171,14 @@ void openmp_1d_static_run(Scene *scenes, Results *results) {
                 total_collisions++;
             }
         }
+        current_timer = omp_get_wtime() - current_timer;
+
         results->all_experiments[n] = &current_experiment[0];
         results->total_collisions[n] = total_collisions;
+        results->num_pairs[n] = N[n]*(N[n]-1)/2;
+        results->timer_results[n] = current_timer;
+        results->threads = threads;
+        strcpy(results->backend, "openmp");
+        strcpy(results->schedule, "1d");
     }
 }
